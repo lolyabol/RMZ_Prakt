@@ -1,0 +1,445 @@
+{{!< layouts/main}}
+
+<div class="content-wrapper">
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-funnel"></i> Результаты фильтрации</span>
+      <a href="/reports" class="btn btn-sm btn-light">
+        <i class="bi bi-arrow-left"></i> Назад
+      </a>
+    </div>
+
+    <div class="card-body">
+      <!-- Кнопки экспорта -->
+      <div class="report-buttons d-flex justify-content-end gap-2">
+        <button id="exportPdf" class="btn btn-danger">
+          <i class="bi bi-file-earmark-pdf"></i> Экспорт в PDF
+        </button>
+        <button id="exportExcel" class="btn btn-success">
+          <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
+        </button>
+      </div>
+
+      <!-- Настройки диаграммы -->
+      <div class="chart-container">
+        <h5 class="mb-3">📊 Настройки диаграммы</h5>
+        <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+          <label class="form-label mb-0">Тип графика:</label>
+          <select id="chartType" class="form-select form-select-sm w-auto">
+            <option value="bar">Столбчатая</option>
+            <option value="line">Линейная</option>
+            <option value="pie">Круговая</option>
+          </select>
+
+          <label class="form-label mb-0 ms-3">Группировка по:</label>
+          <select id="chartField" class="form-select form-select-sm w-auto">
+            <option value="User">Пользователь</option>
+            <option value="Client">Компьютер</option>
+            <option value="Printer">Принтер</option>
+            <option value="DocumentName">Документ</option>
+          </select>
+
+          <label class="form-label mb-0 ms-3">Метрика:</label>
+          <select id="chartMetric" class="form-select form-select-sm w-auto">
+            <option value="count">Количество записей</option>
+            <option value="sumPages">Сумма страниц</option>
+          </select>
+
+          <label class="form-label mb-0 ms-3">Диапазон данных:</label>
+          <select id="chartScope" class="form-select form-select-sm w-auto">
+            <option value="all">Вся выборка</option>
+            <option value="page">Текущая страница</option>
+          </select>
+        </div>
+
+        <div class="text-center mb-4">
+          <canvas id="userChart" width="800" height="300" style="max-width: 100%; margin: auto;"></canvas>
+        </div>
+      </div>
+
+      <!-- Таблица -->
+      <div class="table-container">
+        <h5 class="mb-3">📄 Записи</h5>
+        <div class="table-responsive border p-3 bg-light">
+          {{#if entries.length}}
+            <table class="table table-sm table-striped table-hover" id="dataTable">
+              <thead class="table-dark sticky-header">
+                <tr>
+                  <th class="sortable-header" data-sort="date">
+                    Дата
+                    {{#ifEquals selectedSort 'date_asc'}}<i class="bi bi-arrow-up sort-icon"></i>{{/ifEquals}}
+                    {{#ifEquals selectedSort 'date_desc'}}<i class="bi bi-arrow-down sort-icon"></i>{{/ifEquals}}
+                  </th>
+                  <th>Пользователь</th>
+                  <th>Компьютер</th>
+                  <th>Принтер</th>
+                  <th>Документ</th>
+                  <th class="sortable-header" data-sort="pages">
+                    Страниц
+                    {{#ifEquals selectedSort 'pages_asc'}}<i class="bi bi-arrow-up sort-icon"></i>{{/ifEquals}}
+                    {{#ifEquals selectedSort 'pages_desc'}}<i class="bi bi-arrow-down sort-icon"></i>{{/ifEquals}}
+                  </th>
+                  <th>Копий</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                {{#each entries}}
+                  <tr>
+                    <td>{{formatDate this.Time}}</td>
+                    <td>{{this.User}}</td>
+                    <td>{{this.Client}}</td>
+                    <td>{{this.Printer}}</td>
+                    <td>{{this.[DocumentName]}}</td>
+                    <td>{{this.Pages}}</td>
+                    <td>{{this.Copies}}</td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          {{else}}
+            <p>Нет подходящих записей.</p>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Пагинация -->
+      <div class="pagination-container">
+        <nav aria-label="Навигация по страницам">
+          <ul class="pagination justify-content-center mt-4">
+            {{#if (gt pagination.currentPage 1)}}
+              <li class="page-item">
+                <a class="page-link" href="?{{queryString pagination.query page=1 sort=selectedSort}}">
+                  <i class="bi bi-chevron-bar-left"></i> Первая
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?{{queryString pagination.query page=(subtract pagination.currentPage 1) sort=selectedSort}}">
+                  <i class="bi bi-chevron-left"></i> Назад
+                </a>
+              </li>
+            {{/if}}
+
+            {{#each (paginationRange pagination.currentPage pagination.totalPages 5)}}
+              <li class="page-item {{#ifEquals this ../pagination.currentPage}}active{{/ifEquals}}">
+                <a class="page-link" href="?{{queryString ../pagination.query page=this sort=../selectedSort}}">{{this}}</a>
+              </li>
+            {{/each}}
+
+            {{#if (lt pagination.currentPage pagination.totalPages)}}
+              <li class="page-item">
+                <a class="page-link" href="?{{queryString pagination.query page=(add pagination.currentPage 1) sort=selectedSort}}">
+                  Вперёд <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?{{queryString pagination.query page=pagination.totalPages sort=selectedSort}}">
+                  Последняя <i class="bi bi-chevron-bar-right"></i>
+                </a>
+              </li>
+            {{/if}}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+  // Инициализация jsPDF
+  const { jsPDF } = window.jspdf;
+
+  const pageEntries = {{{json entries}}};
+  const allEntries = {{{json allEntries}}};
+  const filterParams = {{{json pagination.query}}};
+
+  const chartTypeSelect = document.getElementById('chartType');
+  const chartFieldSelect = document.getElementById('chartField');
+  const chartMetricSelect = document.getElementById('chartMetric');
+  const chartScopeSelect = document.getElementById('chartScope');
+  const exportPdfBtn = document.getElementById('exportPdf');
+  const exportExcelBtn = document.getElementById('exportExcel');
+
+  let chart;
+
+  function getRandomColor() {
+    return `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+  }
+
+  function getSelectedEntries() {
+    return chartScopeSelect.value === 'page' ? [...pageEntries] : [...allEntries];
+  }
+
+  function groupByField(field, metric) {
+    const result = {};
+    const data = getSelectedEntries();
+
+    data.forEach(e => {
+      const key = e[field] || 'Неизвестно';
+      if (metric === 'count') {
+        result[key] = (result[key] || 0) + 1;
+      } else if (metric === 'sumPages') {
+        const pages = parseInt(e.Pages) || 0;
+        result[key] = (result[key] || 0) + pages;
+      }
+    });
+
+    return result;
+  }
+
+  function renderChart(type, field, metric) {
+  const data = groupByField(field, metric);
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+  const colors = labels.map(() => getRandomColor());
+
+  const ctx = document.getElementById('userChart').getContext('2d');
+  if (chart) chart.destroy();
+
+  // Общие настройки для всех типов диаграмм
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeOutQuart',
+      animateScale: true,
+      animateRotate: true
+    },
+    plugins: {
+      legend: {
+        position: 'right'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+              let label = context.label || '';
+              if (label) label += ': ';
+              label += context.raw;
+              label += metric === 'sumPages' ? ' страниц' : ' записей';
+              return label;
+          }
+        }
+      }
+    }
+  };
+
+  // Специфические настройки для каждого типа диаграммы
+  const chartConfig = {
+    type: type,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: metric === 'count' ? 'Количество записей' : 'Сумма страниц',
+        data: values,
+        backgroundColor: colors,
+        borderColor: '#fff',
+        borderWidth: 1
+      }]
+    },
+    options: commonOptions
+  };
+
+  // Дополнительные настройки для конкретных типов
+  if (type === 'pie') {
+    chartConfig.options.animation.animateRotate = true;
+    chartConfig.options.animation.animateScale = true;
+    chartConfig.data.datasets[0].hoverOffset = 15;
+  } 
+  else if (type === 'bar') {
+    chartConfig.data.datasets[0].borderRadius = 4;
+    chartConfig.options.animation.easing = 'easeOutElastic';
+  }
+  else if (type === 'line') {
+    chartConfig.data.datasets[0].fill = true;
+    chartConfig.data.datasets[0].tension = 0.3;
+    chartConfig.options.animation.easing = 'easeOutExpo';
+  }
+
+  chart = new Chart(ctx, chartConfig);
+}
+
+  function updateChart() {
+    renderChart(chartTypeSelect.value, chartFieldSelect.value, chartMetricSelect.value);
+  }
+
+  function sortTable(sortType) {
+    const tbody = document.getElementById('tableBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    rows.sort((a, b) => {
+      const aVal = a.cells[sortType === 'date' ? 0 : 5].textContent;
+      const bVal = b.cells[sortType === 'date' ? 0 : 5].textContent;
+      
+      if (sortType === 'date') {
+        return sortDirection === 'asc' 
+          ? new Date(aVal) - new Date(bVal)
+          : new Date(bVal) - new Date(aVal);
+      } else {
+        return sortDirection === 'asc' 
+          ? parseInt(aVal) - parseInt(bVal)
+          : parseInt(bVal) - parseInt(aVal);
+      }
+    });
+    
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+    
+    updateSortIcons(sortType, sortDirection);
+  }
+
+  function updateSortIcons(field, direction) {
+    document.querySelectorAll('.sort-icon').forEach(icon => icon.remove());
+    
+    const header = document.querySelector(`th[data-sort="${field}"]`);
+    if (header) {
+      const icon = document.createElement('i');
+      icon.className = `bi bi-arrow-${direction === 'asc' ? 'up' : 'down'} sort-icon`;
+      header.appendChild(icon);
+    }
+  }
+
+  document.querySelectorAll('.sortable-header').forEach(header => {
+    header.addEventListener('click', function() {
+      const sortField = this.dataset.sort;
+      let sortDirection;
+      
+      const currentIcon = this.querySelector('.sort-icon');
+      if (currentIcon && currentIcon.classList.contains('bi-arrow-up')) {
+        sortDirection = 'desc';
+      } else if (currentIcon && currentIcon.classList.contains('bi-arrow-down')) {
+        sortDirection = 'asc';
+      } else {
+        sortDirection = 'asc'; 
+      }
+      
+      sortTable(sortField, sortDirection);
+    });
+  });
+  function base64ArrayBuffer(arrayBuffer) {
+  let base64 = '';
+  const encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+  const bytes = new Uint8Array(arrayBuffer);
+  const byteLength = bytes.byteLength;
+  const byteRemainder = byteLength % 3;
+  const mainLength = byteLength - byteRemainder;
+
+  let a, b, c, d;
+  let chunk;
+
+  for (let i = 0; i < mainLength; i += 3) {
+    chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+
+    a = (chunk >> 18) & 63;
+    b = (chunk >> 12) & 63;
+    c = (chunk >> 6) & 63;
+    d = chunk & 63;
+
+    base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
+  }
+
+  if (byteRemainder === 1) {
+    chunk = bytes[mainLength];
+
+    a = (chunk >> 2) & 63;
+    b = (chunk << 4) & 63;
+
+    base64 += encodings[a] + encodings[b] + '==';
+  } else if (byteRemainder === 2) {
+    chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
+
+    a = (chunk >> 10) & 63;
+    b = (chunk >> 4) & 63;
+    c = (chunk << 2) & 63;
+
+    base64 += encodings[a] + encodings[b] + encodings[c] + '=';
+  }
+
+  return base64;
+}
+
+  async function loadCustomFont(doc) {
+  const fontUrl = '/public/fonts/Roboto-Regular.ttf';
+  const fontName = 'Roboto-Regular';
+  const fontStyle = 'normal';
+
+  const resp = await fetch(fontUrl);
+  const buf = await resp.arrayBuffer();
+
+  const b64 = base64ArrayBuffer(buf);
+
+  doc.addFileToVFS(`${fontName}.ttf`, b64);
+  doc.addFont(`${fontName}.ttf`, fontName, fontStyle);
+  doc.setFont(fontName, fontStyle);
+}
+
+
+  exportPdfBtn.addEventListener('click', async () => {
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm' });
+      await loadCustomFont(doc);
+
+      doc.setFontSize(16);
+      doc.text('Отчет о печати документов', 105, 10, { align: 'center' });
+
+      doc.setFontSize(10);
+      doc.text(`Сгенерировано: ${new Date().toLocaleString()}`, 10, 15);
+
+      const canvas = document.getElementById('userChart');
+      const img = await html2canvas(canvas, { scale: 2 });
+      doc.addImage(img.toDataURL('image/png'), 'PNG', 10, 25, 180, 80);
+
+      doc.autoTable({
+  startY: 110,
+  head: [['Дата','Пользователь','Компьютер','Принтер','Документ','Страниц','Копий']],
+  body: getSelectedEntries().map(e => [
+    new Date(e.Time).toLocaleString(), e.User, e.Client,
+    e.Printer, e['DocumentName'], e.Pages, e.Copies
+  ]),
+  margin: { top: 10 },
+  styles: { fontSize: 8, font: 'Roboto-Regular' }, 
+  headStyles: { fillColor: [52,58,64] }
+});
+
+
+      doc.save(`Отчет_печать_${new Date().toISOString().slice(0,10)}.pdf`);
+    } catch(e) {
+      console.error(e);
+      alert('Ошибка при создании PDF');
+    }
+  });
+
+  exportExcelBtn.addEventListener('click', function() {
+    const data = [
+      ['Дата', 'Пользователь', 'Компьютер', 'Принтер', 'Документ', 'Страниц', 'Копий'],
+      ...getSelectedEntries().map(entry => [
+        new Date(entry.Time).toLocaleString(),
+        entry.User,
+        entry.Client,
+        entry.Printer,
+        entry['DocumentName'],
+        entry.Pages,
+        entry.Copies
+      ])
+    ];
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Отчет");
+    
+    XLSX.writeFile(wb, `Отчет_печать_${new Date().toISOString().slice(0,10)}.xlsx`);
+  });
+
+  chartTypeSelect.addEventListener('change', updateChart);
+  chartFieldSelect.addEventListener('change', updateChart);
+  chartMetricSelect.addEventListener('change', updateChart);
+  chartScopeSelect.addEventListener('change', updateChart);
+
+  updateChart();
+</script>

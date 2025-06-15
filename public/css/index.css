@@ -1,0 +1,135 @@
+  .indexBody {
+    padding-left: 15vw;
+    padding-right: 15vw;
+  }
+  .filter-form {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+  }
+
+  .filter-group {
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  .filter-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+  }
+
+  .filter-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    position: relative;
+  }
+
+  .filter-input-wrapper select,
+  .filter-input-wrapper input {
+    flex: 1;
+    padding: 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .toggle-mode {
+    background-color: #e0e0e0;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .filter-form button[type="submit"] {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1.2;
+    text-align: center;
+    min-width: 140px;
+  }
+  .filter-form button[type="submit"]:hover {
+    background-color: #035ab8;
+  }
+
+  .autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+  }
+
+  .suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .suggestion-item:hover {
+    background-color: #f0f0f0;
+  }
+
+  .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1.2;
+    text-align: center;
+    min-width: 140px;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  .btn-secondary {
+    background-color: #bb1d01;
+    color: white;
+    
+  }
+  
+  .btn-secondary:hover {
+    background-color: #970101;
+  }
+  .btn-debug {
+    background-color: #00b30f;
+    color: white;
+  }
+  
+  .btn-debug:hover {
+    background-color: #187a00;
+  }
+  

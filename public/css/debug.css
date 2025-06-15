@@ -1,0 +1,81 @@
+.debug-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .stat-card h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+  }
+  .files-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  .files-table th, .files-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  .files-table th {
+    background-color: #f2f2f2;
+  }
+  .date-range {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .date-box {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    max-width: 27vw;
+  }
+  
+
+.header-row h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.btn-back {
+  background-color: #0274df;
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-back:hover {
+  background-color: #024ec0;
+}

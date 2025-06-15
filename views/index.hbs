@@ -1,0 +1,176 @@
+{{!< layouts/main}}
+<div class="indexBody">
+<div class="content-wrapper">
+  <h1>Фильтрация записей печати</h1>
+
+  <form method="GET" action="/reports/entries/filter" class="filter-form">
+    <div class="filter-group">
+      <label for="user">Пользователь:</label>
+      <div class="filter-input-wrapper" data-mode="select">
+        <select name="user" id="user-select">
+          <option value="">Любой</option>
+          {{#each users}}
+            <option value="{{this}}" {{#if (eq ../selected.user this)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+        <input type="text" name="user" id="user-input" value="{{selected.user}}" 
+               placeholder="Начните вводить имя" 
+               class="autocomplete-input"
+               data-field="user"
+               style="display: none;">
+        <button type="button" class="toggle-mode" title="Переключить ввод">🖊 / 📋</button>
+        <div class="autocomplete-suggestions" id="user-suggestions"></div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="computer">Компьютер:</label>
+      <div class="filter-input-wrapper" data-mode="select">
+        <select name="computer" id="computer-select">
+          <option value="">Любой</option>
+          {{#each computers}}
+            <option value="{{this}}" {{#if (eq ../selected.computer this)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+        <input type="text" name="computer" id="computer-input" value="{{selected.computer}}" 
+               placeholder="Начните вводить имя компьютера" 
+               class="autocomplete-input"
+               data-field="computer"
+               style="display: none;">
+        <button type="button" class="toggle-mode" title="Переключить ввод">🖊 / 📋</button>
+        <div class="autocomplete-suggestions" id="computer-suggestions"></div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="printer">Принтер:</label>
+      <div class="filter-input-wrapper" data-mode="select">
+        <select name="printer" id="printer-select">
+          <option value="">Любой</option>
+          {{#each printers}}
+            <option value="{{this}}" {{#if (eq ../selected.printer this)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+        <input type="text" name="printer" id="printer-input" value="{{selected.printer}}" 
+               placeholder="Начните вводить название принтера" 
+               class="autocomplete-input"
+               data-field="printer"
+               style="display: none;">
+        <button type="button" class="toggle-mode" title="Переключить ввод">🖊 / 📋</button>
+        <div class="autocomplete-suggestions" id="printer-suggestions"></div>
+      </div>
+    </div>
+
+<div class="filter-group">
+  <label for="document-input">Документ:</label>
+  <div class="filter-input-wrapper" data-mode="input">
+    <input type="text" name="DocumentName" id="document-input" 
+           placeholder="Начните вводить название" 
+           class="autocomplete-input"
+           data-field="document">
+    <div class="autocomplete-suggestions" id="document-suggestions"></div>
+  </div>
+</div>
+
+<div class="filter-group">
+  <label for="dateFrom">С даты:</label>
+  <input type="date" id="dateFrom" name="dateFrom" value="{{selected.dateFrom}}">
+</div>
+
+<div class="filter-group">
+  <label for="dateTo">По дату:</label>
+  <input type="date" id="dateTo" name="dateTo" value="{{selected.dateTo}}">
+</div>
+
+<div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;">
+  <button type="submit" class="btn-primary">Применить фильтр</button>
+  <button type="button" class="btn btn-secondary" onclick="window.location.href='/reports/entries/filter'">Сбросить фильтр</button>
+<button type="button" class="btn btn-debug" onclick="window.location.href='/reports/debug'">Отладочная информация</button>
+</div>
+
+<script>
+  document.querySelectorAll('.toggle-mode').forEach(button => {
+    button.addEventListener('click', function() {
+      const wrapper = this.closest('.filter-input-wrapper');
+      const mode = wrapper.getAttribute('data-mode');
+      const select = wrapper.querySelector('select');
+      const input = wrapper.querySelector('input');
+      const suggestions = wrapper.querySelector('.autocomplete-suggestions');
+
+      if (mode === 'select') {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        wrapper.setAttribute('data-mode', 'input');
+        input.focus();
+      } else {
+        input.style.display = 'none';
+        select.style.display = 'block';
+        wrapper.setAttribute('data-mode', 'select');
+        if (suggestions) suggestions.style.display = 'none';
+      }
+    });
+  });
+
+  document.querySelectorAll('.autocomplete-input').forEach(input => {
+    const field = input.dataset.field;
+    const suggestions = document.getElementById(`${field}-suggestions`);
+
+    if (!suggestions) return;
+
+    input.addEventListener('input', async function() {
+      const query = this.value.trim();
+      
+      if (query.length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/reports/search-suggestions?field=${field}&query=${encodeURIComponent(query)}`);
+        const results = await response.json();
+
+        if (results.length > 0) {
+          suggestions.innerHTML = results.map(item => 
+            `<div class="suggestion-item">${item}</div>`
+          ).join('');
+          suggestions.style.display = 'block';
+        } else {
+          suggestions.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Ошибка при получении подсказок:', error);
+        suggestions.style.display = 'none';
+      }
+    });
+
+    suggestions.addEventListener('click', function(e) {
+      if (e.target.classList.contains('suggestion-item')) {
+        input.value = e.target.textContent;
+        this.style.display = 'none';
+      }
+    });
+
+    // Скрытие подсказок при клике вне
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+        suggestions.style.display = 'none';
+      }
+    });
+  });
+
+  // При отправке формы - отключаем неактивные поля
+  document.querySelector('form').addEventListener('submit', function() {
+    document.querySelectorAll('.filter-input-wrapper').forEach(wrapper => {
+      const mode = wrapper.getAttribute('data-mode');
+      const select = wrapper.querySelector('select');
+      const input = wrapper.querySelector('input');
+      
+      if (mode === 'select') {
+        if (input) input.disabled = true;
+      } else {
+        if (select) select.disabled = true;
+      }
+    });
+  });
+</script>
+</div>

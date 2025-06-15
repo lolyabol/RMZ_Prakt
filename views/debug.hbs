@@ -1,0 +1,105 @@
+{{!< layouts/main}}
+
+<div class="debug-container">
+  <div class="header-row">
+    <h1>Отладочная информация</h1>
+    <a href="/reports" class="btn btn-back">
+      <i class="bi bi-arrow-left"></i> Назад
+    </a>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="statsChart" width="400" height="200"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('statsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Пользователи', 'Компьютеры', 'Принтеры', 'Документы'],
+      datasets: [{
+        label: 'Уникальные значения',
+        data: [
+          {{debugInfo.uniqueUsers}},
+          {{debugInfo.uniqueComputers}},
+          {{debugInfo.uniquePrinters}},
+          {{debugInfo.uniqueDocuments}}
+        ],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.7)',
+          'rgba(54, 162, 235, 0.7)',
+          'rgba(255, 206, 86, 0.7)',
+          'rgba(75, 192, 192, 0.7)'
+        ]
+      }]
+    }
+  });
+</script>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Всего файлов</h3>
+      <div class="stat-value">{{debugInfo.totalFiles}}</div>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Всего записей</h3>
+      <div class="stat-value">{{debugInfo.totalEntries}}</div>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Уникальных пользователей</h3>
+      <div class="stat-value">{{debugInfo.uniqueUsers}}</div>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Уникальных компьютеров</h3>
+      <div class="stat-value">{{debugInfo.uniqueComputers}}</div>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Уникальных принтеров</h3>
+      <div class="stat-value">{{debugInfo.uniquePrinters}}</div>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Уникальных документов</h3>
+      <div class="stat-value">{{debugInfo.uniqueDocuments}}</div>
+    </div>
+  </div>
+
+  <div class="date-range">
+    <div class="date-box">
+      <h3>Первая запись</h3>
+      <div>{{formatDate debugInfo.firstParsedDate}}</div>
+    </div>
+    <div class="date-box">
+      <h3>Последняя запись</h3>
+      <div>{{formatDate debugInfo.lastParsedDate}}</div>
+    </div>
+  </div>
+
+  <h2>Детализация по файлам</h2>
+  <table class="files-table">
+    <thead>
+      <tr>
+        <th>Файл</th>
+        <th>Размер</th>
+        <th>Записей</th>
+        <th>Компьютер</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each debugInfo.fileSizes}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.size}}</td>
+          <td>{{this.entries}}</td>
+          <td>{{lookup (lookup ../reports @index) "computer"}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

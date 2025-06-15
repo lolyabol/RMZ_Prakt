@@ -1,0 +1,40 @@
+{{!< layouts/main }}
+<link rel="stylesheet" href="/public/css/auth.css">
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Вход</h1>
+        {{#if error}}
+        <p style="color:red;">{{error}}</p>
+        {{/if}}
+        <form class="auth-form" method="POST" action="/auth/login">
+    <label>Имя пользователя:</label>
+    <input type="text" name="username" required />
+
+    <label>Пароль:</label>
+<div class="password-wrapper">
+    <input type="password" id="password" name="password" required />
+    <button type="button" class="toggle-password" aria-label="Показать пароль">🙈</button>
+</div>
+    <button class="auth-btn" type="submit">Войти</button>
+</form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.querySelector('.toggle-password');
+    const passwordInput = document.getElementById('password');
+
+    toggleBtn.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type');
+        if (type === 'password') {
+            passwordInput.setAttribute('type', 'text');
+            toggleBtn.textContent = '🐵'; 
+            toggleBtn.setAttribute('aria-label', 'Скрыть пароль');
+        } else {
+            passwordInput.setAttribute('type', 'password');
+            toggleBtn.textContent = '🙈';
+            toggleBtn.setAttribute('aria-label', 'Показать пароль');
+        }
+    });
+});
+</script>
