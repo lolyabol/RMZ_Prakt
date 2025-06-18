@@ -18,7 +18,7 @@ export default class ReportController {
         users,
         computers,
         printers,
-        documents, // ✅ добавлено
+        documents, 
         selected: {}
       });
     } catch (error) {
@@ -86,13 +86,16 @@ export default class ReportController {
       const paginatedEntries = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   
       res.render('filteredEntries', {
-        entries: paginatedEntries,
-        allEntries: filtered,
-        pagination: {
-          currentPage,
-          totalPages,
-          query: req.query
-        },
+  entries: paginatedEntries,
+  allEntries: filtered,
+  pagination: {
+    currentPage,
+    totalPages,
+    query: Object.fromEntries(
+      Object.entries(req.query)
+        .filter(([key]) => key !== 'page') // Исключаем page из query
+    )
+  },
         users,
         computers,
         printers,

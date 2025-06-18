@@ -90,9 +90,42 @@ export const hbsHelpers = (hbs) => {
     return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
   });
 
-  hbs.registerHelper('queryString', function (params) {
-    const searchParams = new URLSearchParams(params || {});
-    return searchParams.toString();
+  // Правильная реализация queryString
+hbs.registerHelper('queryString', function(params, options) {
+  // Создаем копию параметров, чтобы не изменять оригинал
+  const queryParams = {...params};
+  
+  // Добавляем/обновляем параметры из options.hash
+  Object.keys(options.hash).forEach(key => {
+    const value = options.hash[key];
+    if (value !== null && value !== undefined && value !== '') {
+      queryParams[key] = value;
+    } else {
+      delete queryParams[key];
+    }
   });
+
+  // Формируем строку запроса
+  const query = Object.keys(queryParams)
+    .filter(key => queryParams[key] !== null && queryParams[key] !== undefined)
+    .map(key => {
+      if (Array.isArray(queryParams[key])) {
+        return queryParams[key]
+          .map(val => `${encodeURIComponent(key)}[]=${encodeURIComponent(val)}`)
+          .join('&');
+      }
+      return `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`;
+    })
+    .join('&');
+
+  return query ? `?${query}` : '';
+});
+hbs.registerHelper('range', function(start, end) {
+  const result = [];
+  for (let i = start; i <= end; i++) {
+    result.push(i);
+  }
+  return result;
+});
   
 };
